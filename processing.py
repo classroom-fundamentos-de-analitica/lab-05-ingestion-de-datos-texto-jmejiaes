@@ -31,7 +31,7 @@ for directory in all_directories:
 
         for i in range(len(list_of_files)):
 
-            with open(f'data/{directory}/{status}/' + list_of_files[i], 'r') as file:
+            with open(f'data/{directory}/{status}/' + list_of_files[i], 'r', encoding="utf-8") as file:
 
 
                 if list_of_files[i] == '.DS_Store':
