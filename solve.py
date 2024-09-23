@@ -1,37 +1,32 @@
-import pandas as pd
-from pathlib import Path
 import os
+import pandas as pd
 import zipfile
 
-# Extraer el archivo ZIP
-datos = zipfile.ZipFile('data.zip', 'r')
-datos.extractall()
-datos.close()
+# Step 1: Unzip the data.zip file
+with zipfile.ZipFile('data.zip', 'r') as zip_ref:
+    zip_ref.extractall()
 
-def procesar_carpeta(carpeta):
+# Step 2: Function to read text files and extract data
+def extract_data_from_directory(directory):
     data = []
-    for root, _, files in os.walk(carpeta):
-        
-        for file in files:
-            
-            if file.endswith('.txt'):
-                file_path = Path(root) / file
-                label = Path(root).name 
-                
-                with file_path.open('r', encoding='utf-8') as f:
-                    text = f.read().strip()
-                    data.append((text, label)) 
-                
-
+    for sentiment in ['negative', 'positive', 'neutral']:
+        sentiment_dir = os.path.join(directory, sentiment)
+        for filename in os.listdir(sentiment_dir):
+            if filename.endswith('.txt'):
+                file_path = os.path.join(sentiment_dir, filename)
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    phrase = file.read().strip()
+                    data.append({'phrase': phrase, 'sentiment': sentiment})
     return data
 
-def guardar_csv(datos, nombre_csv):
-    df = pd.DataFrame(datos, columns=['phrase', 'sentiment'])
-    df.to_csv(nombre_csv, index=False)
-    #print(f'Archivo CSV guardado en: {nombre_csv}')
+# Step 3: Extract data for train and test directories
+train_data = extract_data_from_directory('train')
+test_data = extract_data_from_directory('test')
 
+# Step 4: Create DataFrames
+train_df = pd.DataFrame(train_data)
+test_df = pd.DataFrame(test_data)
 
-
-files = ["train_dataset.csv", "test_dataset.csv"]
-for file in files:
-    guardar_csv(procesar_carpeta(file.split("_")[0]), file)
+# Step 5: Save DataFrames to CSV files
+train_df.to_csv('train_dataset.csv', index=False)
+test_df.to_csv('test_dataset.csv', index=False)
